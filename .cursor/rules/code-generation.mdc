@@ -1,0 +1,73 @@
+
+---
+description: Instructions for Cursor AI when generating new code
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: true
+---
+
+# Code Generation Instructions
+
+## Before Generating
+
+1. Modul adını müəyyən et — hansı modulda olduğunu bil, doğru qovluğa yaz
+2. Mövcud faylları yoxla — oxşar fayl varsa onun strukturuna uy
+3. Types-ı əvvəl yaz — əvvəl .types.ts, sonra .api.ts, sonra hook-lar, sonra komponentlər
+
+## Always Include
+
+- Bütün import-lar @/ alias ilə
+- Props interface komponentin üstündə
+- Return type açıq yazılmış
+- index.ts-ə yeni export əlavə et
+
+## When Creating a New Module Feature
+
+Məsələn "bootcamp modulu üçün review sistemi əlavə et":
+
+1. types/bootcamp.types.ts → Review, AddReviewDto interface əlavə et
+2. api/bootcamp.api.ts → addReview(), getReviews() əlavə et
+3. api/bootcamp.keys.ts → reviews(courseId) key əlavə et
+4. api/useReviews.ts → yarat
+5. api/useAddReview.ts → yarat
+6. components/ReviewList.tsx → yarat
+7. components/ReviewForm.tsx → yarat
+8. modules/bootcamp/index.ts → yeni export-ları əlavə et
+
+## When Creating a Cross-Module Feature
+
+features/ altına yarat:
+
+features/<feature-name>/
+├── api/
+├── components/
+├── hooks/
+├── types/
+└── index.ts
+
+## Code Quality Checklist
+
+Hər generate olunan kod üçün yoxla:
+
+- [ ] any yoxdur
+- [ ] Bütün import-lar @/ ilə
+- [ ] Props interface var
+- [ ] Return type var
+- [ ] cn() className üçün istifadə edilib
+- [ ] Loading/error state handle edilib
+- [ ] toast import-u @/shared/lib/toast-dandır (sonner-dən deyil)
+- [ ] onSuccess-də toast.success var (lazımdırsa)
+- [ ] onError yalnız xüsusi case-də yazılıb (adi xəta üçün qlobal handler işləyir)
+- [ ] queryKey factory istifadə edilib
+- [ ] index.ts-ə export əlavə edilib
+
+## Do NOT
+
+- Modul boundary-ni keçmə
+- any istifadə etmə
+- style={{}} istifadə etmə
+- Hardcoded route string yazma — ROUTES sabitini istifadə et
+- Server state-i Zustand-da saxlama
+- Axios-u birbaşa komponentdə çağırma
+- import { toast } from 'sonner' yazma — həmişə @/shared/lib/toast
+- shared/ içindən modules/-ə import etmə — circular dependency yaranır
+- Hər mutation-a onError yazma — qlobal handler queryClient.ts-də var

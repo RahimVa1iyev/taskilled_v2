@@ -1,0 +1,79 @@
+
+---
+description: File naming conventions, module structure template, index.ts export rules
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: true
+---
+
+# Naming & File Structure Rules
+
+## File Naming Convention
+
+| Tip | Format | Nümunə |
+|---|---|---|
+| Component | PascalCase | CourseCard.tsx |
+| Page component | PascalCase + Page | BootcampPage.tsx |
+| Hook | camelCase + use | useCourses.ts |
+| API file | kebab + .api | bootcamp.api.ts |
+| Query keys | kebab + .keys | bootcamp.keys.ts |
+| Types | kebab + .types | bootcamp.types.ts |
+| Zod schema | kebab + .schema | bootcamp.schema.ts |
+| Zustand store | kebab + .store | auth.store.ts |
+| Selectors | kebab + .selectors | auth.selectors.ts |
+| Constants | kebab + .constants | auth.constants.ts |
+| Utils | kebab + .utils | token.utils.ts |
+
+## Module Structure Template
+
+Every module follows this IDENTICAL structure:
+
+modules/<module-name>/
+├── api/
+│   ├── <module>.api.ts       ← axios functions
+│   ├── <module>.keys.ts      ← queryKey factory
+│   ├── use<Entity>.ts        ← useQuery hooks
+│   └── use<Action>.ts        ← useMutation hooks
+├── components/
+│   ├── <ComponentName>.tsx
+│   └── index.ts
+├── pages/
+│   └── <Module>Page.tsx
+├── store/                    ← only if module needs global state
+│   ├── <module>.store.ts
+│   └── <module>.selectors.ts
+├── hooks/                    ← non-query hooks only
+│   └── use<Something>.ts
+├── types/
+│   ├── <module>.types.ts     ← TypeScript interfaces
+│   └── <module>.schema.ts    ← Zod validation schemas
+├── utils/
+│   └── <module>.helpers.ts
+├── constants/
+│   └── <module>.constants.ts
+└── index.ts                  ← PUBLIC API only
+
+## index.ts — Public API Rules
+
+// ✅ index.ts — yalnız xarici istifadə üçün olanlar export edilir
+export { CourseCard } from './components/CourseCard'
+export { useCourses } from './api/useCourses'
+export { useEnroll } from './api/useEnroll'
+export type { Course, CourseFilters } from './types/bootcamp.types'
+
+// ❌ Internal helpers xaricə export edilmir
+// export { calculateProgress } from './utils/bootcamp.helpers'
+
+## Route Constants
+
+// ✅ Always use ROUTES constant
+import { ROUTES } from '@/shared/constants/routes'
+navigate(ROUTES.BOOTCAMP.DETAIL.replace(':id', courseId))
+
+// ❌ Never hardcode
+navigate('/bootcamp/123')
+
+## i18n Namespace Convention
+
+const { t } = useTranslation('bootcamp')  // modules/bootcamp
+const { t } = useTranslation('auth')      // modules/auth
+const { t } = useTranslation('common')    // shared

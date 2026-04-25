@@ -1,0 +1,195 @@
+
+---
+description: Testing rules — unit tests, component tests, mock patterns with Vitest
+globs: ["src/**/*.ts", "src/**/*.tsx", "src/**/*.test.ts", "src/**/*.test.tsx"]
+alwaysApply: true
+---
+
+# Testing Rules
+
+## Stack
+
+- Unit + Component tests: Vitest + @testing-library/react
+- API mock: MSW (Mock Service Worker)
+- Store mock: vi.mock
+
+## Fayl Yeri
+
+// Test faylı test etdiyi faylın yanında olur
+src/
+├── modules/auth/
+│   ├── utils/
+│   │   ├── token.utils.ts
+│   │   └── token.utils.test.ts     ← yanında
+│   ├── components/
+│   │   ├── LoginForm.tsx
+│   │   └── LoginForm.test.tsx      ← yanında
+│   └── hooks/
+│       ├── usePermission.ts
+│       └── usePermission.test.ts   ← yanında
+
+## Fayl Adlandırma
+
+// ✅ Düzgün
+token.utils.test.ts
+LoginForm.test.tsx
+usePermission.test.ts
+
+// ❌ Yanlış
+token.utils.spec.ts    // .test istifadə et
+__tests__/token.ts     // ayrı qovluq deyil
+
+## Unit Test Pattern — utils/helpers
+
+import { describe, it, expect } from 'vitest'
+import { formatCurrency, formatDate } from './format.utils'
+
+describe('formatCurrency', () => {
+  it('AZN formatında göstərir', () => {
+    expect(formatCurrency(100)).toBe('100,00 ₼')
+  })
+
+  it('sıfır dəyər', () => {
+    expect(formatCurrency(0)).toBe('0,00 ₼')
+  })
+})
+
+describe('formatDate', () => {
+  it('tarix formatlanır', () => {
+    expect(formatDate('2024-01-15')).toBe('15 yan 2024')
+  })
+})
+
+## Component Test Pattern
+
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { LoginForm } from './LoginForm'
+
+// Test wrapper — provider-lər lazım olduqda
+function renderWithProviders(ui: React.ReactElement) {
+  return render(
+    <QueryClientProvider client={new QueryClient()}>
+      {ui}
+    </QueryClientProvider>
+  )
+}
+
+describe('LoginForm', () => {
+  it('form render olur', () => {
+    renderWithProviders(<LoginForm />)
+    expect(screen.getByLabelText('E-mail')).toBeInTheDocument()
+    expect(screen.getByLabelText('Şifrə')).toBeInTheDocument()
+  })
+
+  it('boş form submit — validation xətası göstərir', async () => {
+    renderWithProviders(<LoginForm />)
+    fireEvent.click(screen.getByRole('button', { name: 'Daxil ol' }))
+    await waitFor(() => {
+      expect(screen.getByText('Bu sahə mütləqdir')).toBeInTheDocument()
+    })
+  })
+
+  it('düzgün data ilə submit çağırılır', async () => {
+    const onSubmit = vi.fn()
+    renderWithProviders(<LoginForm onSubmit={onSubmit} />)
+
+    fireEvent.change(screen.getByLabelText('E-mail'), {
+      target: { value: 'test@test.com' }
+    })
+    fireEvent.change(screen.getByLabelText('Şifrə'), {
+      target: { value: 'password123' }
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Daxil ol' }))
+
+    await waitFor(() => {
+      expect(onSubmit).toHaveBeenCalledWith({
+        email: 'test@test.com',
+        password: 'password123'
+      })
+    })
+  })
+})
+
+## Hook Test Pattern
+
+import { renderHook, act } from '@testing-library/react'
+import { describe, it, expect } from 'vitest'
+import { usePermission } from './usePermission'
+
+// Store mock
+vi.mock('@/modules/auth/store/auth.store', () => ({
+  useAuthStore: vi.fn(() => ({ user: { role: 'PARTNER' } }))
+}))
+
+describe('usePermission', () => {
+  it('PARTNER bootcamp:create edə bilər', () => {
+    const { result } = renderHook(() => usePermission())
+    expect(result.current.can('bootcamp:create')).toBe(true)
+  })
+
+  it('PARTNER isPartner qaytarır', () => {
+    const { result } = renderHook(() => usePermission())
+    expect(result.current.isPartner()).toBe(true)
+  })
+})
+
+## API Mock Pattern — MSW
+
+// src/mocks/handlers.ts
+import { http, HttpResponse } from 'msw'
+
+export const handlers = [
+  http.get(`${import.meta.env.VITE_API_URL}/courses`, () => {
+    return HttpResponse.json({
+      data: [{ id: '1', title: 'React kursu', level: 'BEGINNER' }],
+      total: 1,
+      page: 1,
+      limit: 12,
+    })
+  }),
+
+  http.post(`${import.meta.env.VITE_API_URL}/auth/login`, () => {
+    return HttpResponse.json({
+      data: { accessToken: 'mock-token', refreshToken: 'mock-refresh' },
+      success: true,
+    })
+  }),
+]
+
+// src/mocks/server.ts
+import { setupServer } from 'msw/node'
+import { handlers } from './handlers'
+export const server = setupServer(...handlers)
+
+// vitest.setup.ts
+import { server } from './src/mocks/server'
+beforeAll(() => server.listen())
+afterEach(() => server.resetHandlers())
+afterAll(() => server.close())
+
+## Test Yazma Qaydaları
+
+// ✅ Test adı: nə test edilir + hansı scenario
+it('uğurlu login — dashboard-a yönləndirir')
+it('yanlış şifrə — xəta mesajı göstərir')
+it('şəbəkə xətası — retry düyməsi göstərir')
+
+// ✅ AAA pattern — Arrange, Act, Assert
+it('kurs kartı enroll düyməsi işləyir', async () => {
+  // Arrange
+  const course = { id: '1', title: 'React', isEnrolled: false }
+  const onEnroll = vi.fn()
+
+  // Act
+  render(<CourseCard course={course} onEnroll={onEnroll} />)
+  fireEvent.click(screen.getByRole('button', { name: 'Qeydiyyat' }))
+
+  // Assert
+  await waitFor(() => expect(onEnroll).toHaveBeenCalledWith('1'))
+})
+
+// ❌ Implementation detail test etmə
+expect(component.state.isLoading).toBe(true)   // WRONG
+// ✅ User behavior test et
+expect(screen.getByRole('progressbar')).toBeInTheDocument()   // CORRECT

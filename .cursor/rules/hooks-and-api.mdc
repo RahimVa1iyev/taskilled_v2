@@ -1,0 +1,123 @@
+
+---
+description: Custom hooks and TanStack Query API hooks rules
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: true
+---
+
+# Hooks & API Rules
+
+## Custom Hook Rules
+
+- Fayl adı: camelCase + use prefix → useCourses.ts
+- Hook içərisində JSX olmaz
+- TanStack Query hook-ları → modules/<n>/api/ folderə
+- Ümumi hook-lar (2+ modul) → shared/hooks/
+
+## useQuery Pattern
+
+import { useQuery } from '@tanstack/react-query'
+import { bootcampApi } from './bootcamp.api'
+import { bootcampKeys } from './bootcamp.keys'
+
+export function useCourses(filters: CourseFilters) {
+  return useQuery({
+    queryKey: bootcampKeys.courses(filters),
+    queryFn: () => bootcampApi.getCourses(filters),
+  })
+}
+
+## useMutation Pattern
+
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { toast } from '@/shared/lib/toast'
+
+export function useEnroll() {
+  const qc = useQueryClient()
+
+  return useMutation({
+    mutationFn: (courseId: string) => bootcampApi.enroll(courseId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: bootcampKeys.myEnrollments() })
+      toast.success('Kursa uğurla qeydiyyat oldunuz')
+    },
+    // onError buraya yazılmır — queryClient.ts-dəki qlobal handler işləyir
+    // Xüsusi case lazımdırsa aşağıdakı qaydaya bax
+  })
+}
+
+## Global Error Handling
+
+Bütün mutation xətaları queryClient.ts-dəki qlobal onError tərəfindən handle edilir:
+- 401 → axios interceptor: clearAuth + /login redirect
+- 403 → axios interceptor: /unauthorized redirect
+- Digər xətalar → toast.apiError(error) avtomatik göstərilir
+
+Hook-da onError YALNIZ bu hallarda yazılır:
+
+// 1. Xüsusi mesaj lazımdır
+onError: (error) => {
+  if (isAxiosError(error) && error.response?.status === 422) {
+    toast.error('Bu email artıq mövcuddur')
+    return
+  }
+}
+
+// 2. Form field xətası göstərmək lazımdır
+onError: (error) => {
+  const fieldErrors = getFieldErrors(error)
+  if (fieldErrors.email) {
+    form.setError('email', { message: fieldErrors.email })
+    return
+  }
+}
+
+// 3. Xüsusi redirect lazımdır
+onError: (error) => {
+  if (isAxiosError(error) && error.response?.status === 403) {
+    navigate(ROUTES.UPGRADE_PLAN)
+    return
+  }
+}
+
+## Query Key Factory
+
+// ✅ Always use key factory — never hardcode keys
+export const bootcampKeys = {
+  all: () => ['bootcamp'] as const,
+  courses: (filters?: CourseFilters) => [...bootcampKeys.all(), 'courses', filters] as const,
+  detail: (id: string) => [...bootcampKeys.all(), 'detail', id] as const,
+  myEnrollments: () => [...bootcampKeys.all(), 'my-enrollments'] as const,
+}
+
+// ✅ Invalidate with key factory
+qc.invalidateQueries({ queryKey: bootcampKeys.courses() })
+
+// ❌ Never hardcode
+qc.invalidateQueries({ queryKey: ['bootcamp', 'courses'] })
+
+## Axios API Functions
+
+// ✅ Always use shared axios instance
+import { api } from '@/shared/lib/axios'
+
+export const bootcampApi = {
+  getCourses: (filters?: CourseFilters): Promise<PaginatedResponse<Course>> =>
+    api.get('/courses', { params: filters }).then(r => r.data),
+  getCourseById: (id: string): Promise<ApiResponse<Course>> =>
+    api.get(`/courses/${id}`).then(r => r.data),
+  enroll: (courseId: string): Promise<void> =>
+    api.post(`/courses/${courseId}/enroll`).then(r => r.data),
+}
+
+// ❌ Never call axios directly in component or hook
+import axios from 'axios'
+axios.get('/courses') // WRONG
+
+## Shared API (2+ modules)
+
+// Global data used by multiple modules → shared/api/
+import { useAreasOfInterest } from '@/shared/api'
+
+// Internships domain lookups (business simulation MS) — yalnız internships modulunda
+import { useCategories, useCountries } from '@/modules/internships/shared/api'

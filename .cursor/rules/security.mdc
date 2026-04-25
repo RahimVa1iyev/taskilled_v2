@@ -1,0 +1,107 @@
+
+---
+description: Security rules — XSS, sensitive data, token handling, input sanitization
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: true
+---
+
+# Security Rules
+
+## XSS Qarşısını Al
+
+// ❌ dangerouslySetInnerHTML heç vaxt istifadə olunmaz
+<div dangerouslySetInnerHTML={{ __html: userContent }} />   // WRONG
+
+// ✅ Rich text üçün sanitize et
+import DOMPurify from 'dompurify'
+<div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(content) }} />
+
+// ✅ Daha yaxşı — RichTextViewer komponenti istifadə et
+import { RichTextViewer } from '@/shared/ui'
+<RichTextViewer content={content} />
+
+## Sensitive Data — localStorage
+
+// ✅ Token Zustand persist ilə saxlanır — birbaşa localStorage yazılmır
+// auth.store.ts → persist middleware istifadə edir
+
+// ❌ Heç vaxt sensitive data birbaşa localStorage-a yazma
+localStorage.setItem('password', password)          // WRONG
+localStorage.setItem('creditCard', cardNumber)      // WRONG
+localStorage.setItem('personalId', idNumber)        // WRONG
+
+// ❌ Heç vaxt sensitive data sessionStorage-a yazma
+sessionStorage.setItem('token', accessToken)        // WRONG — Zustand işlət
+
+## Environment Variables
+
+// ✅ API key-lər həmişə .env-də
+const apiKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY
+
+// ❌ Heç vaxt kodda hardcode
+const apiKey = 'pk_live_xxxxx'   // WRONG — git-ə düşür
+
+// ✅ Server-side secret-lər VITE_ prefix-siz olur — frontend bundle-a düşmür
+// .env:
+// STRIPE_SECRET_KEY=sk_live_xxx   ← frontend görə bilmir (VITE_ yox)
+// VITE_STRIPE_PUBLIC_KEY=pk_xxx   ← frontend görə bilər
+
+// ⚠️ VITE_ prefix-li hər şey public bundle-a düşür — secret yazma
+
+## API Requests
+
+// ✅ Bütün requestlər shared axios instance-dan keçir
+import { api } from '@/shared/lib/axios'
+
+// ✅ Token interceptor-da avtomatik əlavə olunur — komponentdə yazma
+api.interceptors.request.use(config => {
+  const token = tokenProvider.getToken()
+  if (token) config.headers.Authorization = `Bearer ${token}`
+  return config
+})
+
+// ❌ Token komponentdə əl ilə yazılmır
+const token = localStorage.getItem('token')
+axios.get('/api', { headers: { Authorization: token } })   // WRONG
+
+## URL Parametrləri
+
+// ✅ User input URL-ə birbaşa verilmir — encode et
+const searchQuery = encodeURIComponent(userInput)
+navigate(`/search?q=${searchQuery}`)
+
+// ✅ TanStack Query params-ı özü encode edir
+api.get('/courses', { params: { search: userInput } })   // ✅ axios handle edir
+
+// ❌ Template literal ilə URL
+api.get(`/courses?search=${userInput}`)   // WRONG — injection riski
+
+## Form Validation
+
+// ✅ Həmişə Zod ilə server-ə göndərməzdən əvvəl validate et
+const result = loginSchema.safeParse(formData)
+if (!result.success) return
+
+// ✅ File upload — tip və ölçü yoxla
+const MAX_SIZE = 5 * 1024 * 1024   // 5MB
+const ALLOWED = ['image/jpeg', 'image/png', 'image/webp']
+
+if (!ALLOWED.includes(file.type)) {
+  toast.error('Yalnız JPEG, PNG, WebP fayllar qəbul olunur')
+  return
+}
+if (file.size > MAX_SIZE) {
+  toast.error('Fayl 5MB-dan böyük ola bilməz')
+  return
+}
+
+## Role-based Access
+
+// ✅ Həssas əməliyyatlar üçün həm frontend həm backend yoxlama
+// Frontend: RoleGuard komponenti istifadə et
+<RoleGuard permission="bootcamp:create">
+  <CreateCourseButton />
+</RoleGuard>
+
+// ⚠️ Frontend yoxlama UI üçündür — real təhlükəsizlik backend-dədir
+// Heç vaxt yalnız frontend permission-a güvənmə

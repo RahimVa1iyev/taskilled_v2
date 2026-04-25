@@ -1,0 +1,86 @@
+---
+description: Git commit conventions, branch naming, PR rules
+alwaysApply: false
+---
+# Git Conventions
+
+## Commit Mesaj Formatı
+
+<tip>(<scope>): <qısa izah>
+
+[ətraflı izah — lazım olduqda]
+
+Tipler:
+- feat:     yeni funksionallıq
+- fix:      bug düzəltmə
+- refactor: kod yenidən yazma (funksionallıq dəyişmir)
+- style:    formatlama, boşluq (məntiqi dəyişiklik yox)
+- chore:    build, dependency, konfiqurasiya
+- docs:     sənədləşmə
+- test:     test əlavə etmə/dəyişmə
+- perf:     performans yaxşılaşdırma
+
+// ✅ Düzgün
+feat(auth): add Google OAuth login
+fix(bootcamp): correct enrollment count on course card
+refactor(shared): extract FormInput to shared/ui/custom
+chore: update TanStack Query to v5.50
+perf(community): add virtual scroll to post feed
+test(auth): add unit tests for token.utils
+
+// ❌ Yanlış
+"fixed bug"           // nə bug? harada?
+"update"              // nə yeniləndi?
+"WIP"                 // commit-ə girməməlidir
+"asdfgh"              // mənasız
+
+## Branch Adlandırma
+
+<tip>/<modul>-<qısa-izah>
+
+// ✅ Düzgün
+feature/auth-google-oauth
+feature/bootcamp-course-reviews
+fix/auth-token-refresh-loop
+fix/profile-avatar-upload
+refactor/shared-form-components
+chore/update-dependencies
+
+// ❌ Yanlış
+"my-branch"
+"fix"
+"rahim-changes"
+"new-feature"
+
+## PR Qaydaları
+
+// PR adı commit formatı ilə eyni
+feat(hackathon): add team creation flow
+
+// PR ölçüsü
+- Max 400 sətir dəyişiklik — böyükdürsə böl
+- Bir PR = bir funksionallıq
+
+// PR description-da mütləq olmalıdır:
+## Nə dəyişdi
+- CourseCard komponentinə rating göstəricisi əlavə edildi
+- useEnroll hook-u invalidate qaydasına uyğunlaşdırıldı
+
+## Necə test etmək olar
+1. Bootcamp səhifəsinə keç
+2. İstənilən kursa klikklə
+3. Enroll düyməsini sınadıqda toast çıxmalıdır
+
+## Screenshot (UI dəyişikliyi varsa)
+[şəkil]
+
+## .gitignore — mütləq olanlar
+
+.env
+.env.local
+.env.staging
+.env.production
+node_modules/
+dist/
+.DS_Store
+*.log

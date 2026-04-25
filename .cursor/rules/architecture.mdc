@@ -1,0 +1,67 @@
+
+---
+description: Project architecture rules — module boundaries, folder structure, import rules
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: true
+---
+
+# Project Architecture
+
+This is a large-scale React application called Taskool.
+Feature-based (module-based) architecture with 6 top-level source folders.
+
+## Folder Structure
+
+src/
+├── app/        → skeleton: router, layouts, header, sidebar, footer
+├── modules/    → feature domains (auth, bootcamp, hackathon, olympiad, community, payment, profile, study-abroad, steam)
+├── features/   → cross-module orchestration (ai-course-generator, onboarding, global-search, notifications)
+├── pages/      → static/marketing (landing, about, contact, legal)
+├── shared/     → reusable ui, lib, hooks, api, i18n, store, types, utils, constants, styles
+└── assets/     → images, icons, fonts (bundled by Vite)
+
+## Module Boundary Rules
+
+- Modules NEVER import from each other's internal files
+- Cross-module access ONLY through index.ts (public API)
+- Shared logic used by 2+ modules → shared/
+- Logic that combines 2+ modules → features/
+
+// ✅ Correct
+import { useAuth } from '@/modules/auth'
+import { Button } from '@/shared/ui'
+import { AICourseGeneratorModal } from '@/features/ai-course-generator'
+
+// ❌ Wrong — never import internal paths
+import { useAuth } from '@/modules/auth/hooks/useAuth'
+import { Button } from '@/shared/ui/shadcn/button'
+
+## Where Things Live
+
+| What | Where |
+|---|---|
+| API çağırışları (1 modul) | modules/<n>/api/ |
+| API — internships domain (lookup və s., yalnız internships) | modules/internships/shared/api/ |
+| API çağırışları (2+ modul, app-wide) | shared/api/ |
+| UI (1 modul) | modules/<n>/components/ |
+| UI (2+ modul) | shared/ui/custom/ |
+| Zustand store (modul) | modules/<n>/store/ |
+| Zustand store (qlobal) | shared/store/ |
+| Hooks (1 modul) | modules/<n>/hooks/ |
+| Hooks (2+ modul) | shared/hooks/ |
+| Layout, Header, Sidebar, Footer | app/components/ |
+| Landing, About, Contact | pages/ |
+| AI generator, Onboarding, Search | features/ |
+
+## Circular Dependency Qaydası
+
+shared/ heç vaxt modules/-ə import etməməlidir.
+shared/lib/axios.ts → useAuthStore import etmə — circular dependency yaranır.
+
+// ✅ Düzgün — token-provider pattern istifadə et
+// shared/lib/token-provider.ts — sadə interface, heç nə bilmir
+// shared/lib/axios.ts          → token-provider-ə bağlı (store yox)
+// app/providers.tsx            → ikisini birləşdirir (bir dəfə register edir)
+
+// ❌ Yanlış — shared içindən modul import
+import { useAuthStore } from '@/modules/auth'  // shared/lib/axios.ts içində — WRONG

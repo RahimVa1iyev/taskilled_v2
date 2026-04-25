@@ -1,0 +1,115 @@
+
+
+---
+description: Tailwind CSS and styling rules — cn(), tokens, shadcn variables
+globs: ["src/**/*.tsx", "src/**/*.css"]
+alwaysApply: true
+---
+
+# Styling Rules
+
+## Core Rules
+
+- Yalnız Tailwind utility class-ları — style={{}} istifadə olunmaz
+- Shadcn CSS variable-ları: bg-background, text-foreground, border-border, text-muted-foreground
+- Öz token-lar shared/styles/tokens.css-də təyin edilir
+- !important heç vaxt istifadə edilmir
+
+## cn() Helper
+
+import { cn } from '@/shared/utils/cn'
+
+// ✅ Correct
+<div className={cn(
+  'flex items-center gap-4 rounded-lg border p-4',
+  isActive && 'bg-primary text-primary-foreground border-primary',
+  isDisabled && 'opacity-50 cursor-not-allowed',
+  size === 'sm' && 'p-2 text-sm',
+  className
+)} />
+
+// ❌ Template literal
+<div className={`flex items-center ${isActive ? 'bg-primary' : 'bg-card'}`} />
+
+// ❌ Inline style
+<div style={{ display: 'flex', backgroundColor: '#000' }} />
+
+## Shadcn Semantic Colors
+
+// ✅ Always use semantic colors
+<div className="bg-background text-foreground" />
+<div className="bg-card text-card-foreground" />
+<div className="bg-primary text-primary-foreground" />
+<div className="bg-muted text-muted-foreground" />
+<div className="bg-destructive text-destructive-foreground" />
+
+// ❌ Hardcoded colors — dark mode-da işləməz
+<div className="bg-white text-black" />
+<div style={{ color: '#333' }} />
+
+## Tailwind v4 Token Sistemi
+
+Tailwind v4-də tailwind.config.ts yoxdur — hər şey CSS-də idarə olunur.
+
+@theme içindəkilər → avtomatik Tailwind class-ına çevrilir:
+  --color-*   →  text-* / bg-* / border-*
+  --radius-*  →  rounded-*
+  --font-*    →  font-*
+
+@layer base :root içindəkilər → yalnız var() ilə istifadə olunur (Tailwind class yaranmır)
+
+// tokens.css nümunəsi
+@theme {
+  --color-brand-primary: #0F172A;   // → bg-brand-primary, text-brand-primary
+  --color-form-border:   #DFDFDF;   // → border-form-border
+  --radius-form:         16px;      // → rounded-form
+  --radius-button:       20px;      // → rounded-button
+}
+
+@layer base {
+  :root {
+    --sidebar-width: 240px;           // → var(--sidebar-width) ilə
+    --sidebar-width-collapsed: 64px;
+    --header-height: 64px;
+    --page-padding: 24px;
+  }
+}
+
+## globals.css Structure
+
+@import "tailwindcss";
+@import "./shadcn.css";       // shadcn variable-ları — dəyişmə
+@import "./tokens.css";       // dizayn token-ları
+@import "./typography.css";   // font class-ları
+@import "./components.css";   // komponent stilləri
+@import "./animations.css";   // @keyframes
+
+## Typography Classes
+
+// typography.css-də təyin olunmuş hazır class-lar:
+<h1 className="text-hero" />           // 60px ExtraBold
+<h2 className="text-section-title" />  // 48px Bold
+<p  className="text-section-desc" />   // 20px Regular
+<h3 className="text-auth-title" />     // 28px SemiBold
+<p  className="text-auth-desc" />      // 18px Regular
+<label className="text-form-label" />  // 16px SemiBold
+<span className="text-required" />     // 13px — required ulduz
+
+## Component Base Classes
+
+// components.css-də təyin olunmuş hazır class-lar:
+<input className="input-base" />                     // standart input stili
+<button className="btn-primary" />                   // əsas button — #0F172A
+<button className="btn-accent" />                    // accent button — #D1E728
+<div className="tab-container" />                    // tab wrapper
+<button className="tab-item" />                      // tab elementi
+<button className="tab-item tab-item-active" />      // aktiv tab
+
+## Animation Classes
+
+// animations.css-də təyin olunmuş hazır class-lar:
+<div className="animate-fade-in" />
+<div className="animate-scale-in" />                 // modal/dropdown açılışı
+<div className="animate-slide-right" />
+<div className="animate-shimmer h-10 rounded-form" /> // skeleton loader
+<div className="animate-fade-in animate-delay-100" /> // stagger

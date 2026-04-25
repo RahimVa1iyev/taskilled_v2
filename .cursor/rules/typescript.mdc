@@ -1,0 +1,74 @@
+
+---
+description: TypeScript rules — types, interfaces, generics, no-any policy
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: true
+---
+
+# TypeScript Rules
+
+## Core Rules
+
+- any heç vaxt istifadə olunmaz — unknown istifadə et, sonra type guard ilə daralt
+- Bütün funksiya və hook-ların return type-ı açıq yazılmalıdır
+- interface → obyekt formaları üçün
+- type → union, intersection, utility types üçün
+- Bütün API response-lar ApiResponse<T> ilə tipləşdirilməlidir (@/shared/types/api.types)
+- Sabitlər üçün as const istifadə et
+- Form validasiyası üçün Zod istifadə et — schema types/<module>.schema.ts-də
+
+## Patterns
+
+// ✅ Interface for object shapes
+interface Course {
+  id: string
+  title: string
+  level: CourseLevel
+}
+
+// ✅ Type for unions
+type CourseLevel = 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED'
+
+// ✅ Explicit return type
+function formatPrice(amount: number): string {
+  return `${amount} AZN`
+}
+
+// ✅ unknown instead of any
+function parseError(error: unknown): string {
+  if (error instanceof Error) return error.message
+  return 'Xəta baş verdi'
+}
+
+// ✅ as const for constants
+export const ROUTES = {
+  AUTH: { LOGIN: '/login' }
+} as const
+
+// ❌ Never
+const data: any = {}
+function doSomething(x: any) {}
+
+## API Types
+
+// Always type API responses
+import type { ApiResponse, PaginatedResponse } from '@/shared/types/api.types'
+
+export const bootcampApi = {
+  getCourses: (): Promise<PaginatedResponse<Course>> =>
+    api.get('/courses').then(r => r.data),
+  getCourseById: (id: string): Promise<ApiResponse<Course>> =>
+    api.get(`/courses/${id}`).then(r => r.data),
+}
+
+## Zod Schemas
+
+// Always export inferred types from schemas
+import { z } from 'zod'
+
+export const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(8),
+})
+
+export type LoginFormData = z.infer<typeof loginSchema>

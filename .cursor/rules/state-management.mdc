@@ -1,0 +1,86 @@
+
+
+---
+description: State management rules — Zustand, TanStack Query, useState usage
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: true
+---
+
+# State Management Rules
+
+## Hansı state üçün nə istifadə edilir
+
+| State növü | Nə istifadə et | Misal |
+|---|---|---|
+| Server state (API-dən gəlir) | TanStack Query | kurslar, user, bildirişlər |
+| Qlobal client state | Zustand | auth token, tema, dil, sidebar |
+| Local UI state | useState / useReducer | modal açıq/bağlı, form step |
+
+## Zustand Store Pattern
+
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+interface AuthState {
+  user: User | null
+  accessToken: string | null
+  isAuthenticated: boolean
+  setTokens: (tokens: AuthTokens) => void
+  logout: () => void
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      user: null,
+      accessToken: null,
+      isAuthenticated: false,
+      setTokens: (tokens) => set({
+        accessToken: tokens.accessToken,
+        isAuthenticated: true,
+      }),
+      logout: () => set({ user: null, accessToken: null, isAuthenticated: false }),
+    }),
+    {
+      name: 'auth-store',
+      partialize: (s) => ({ accessToken: s.accessToken, user: s.user }),
+    }
+  )
+)
+
+## Selectors — ayrıca fayl
+
+// store/auth.selectors.ts
+export const useCurrentUser = () => useAuthStore(s => s.user)
+export const useIsAuthenticated = () => useAuthStore(s => s.isAuthenticated)
+export const useIsAdmin = () => useAuthStore(s => s.user?.role === 'ADMIN')
+
+## Server State Qaydaları
+
+// ✅ Server state həmişə TanStack Query-dən
+function CourseList() {
+  const { data, isLoading, isError } = useCourses(filters)
+}
+
+// ❌ Server state Zustand-da saxlanmaz
+const useCoursesStore = create(() => ({
+  courses: [], // WRONG — bu API-dən gəlir
+}))
+
+## Zustand Store Yerləri
+
+// Modul-a aid store → modules/<n>/store/
+// modules/auth/store/auth.store.ts
+
+// Qlobal store → shared/store/
+// shared/store/ui.store.ts           — sidebar, theme, locale
+// shared/store/notification.store.ts — bildiriş sayı
+// shared/store/cart.store.ts         — checkout cart
+
+## getState() — komponent xaricində
+
+// ✅ Store-u komponent xaricində oxumaq (interceptor, loader)
+const token = useAuthStore.getState().accessToken
+
+// ❌ Hook komponent xaricində çağırılmaz
+const token = useAuthStore().accessToken // WRONG

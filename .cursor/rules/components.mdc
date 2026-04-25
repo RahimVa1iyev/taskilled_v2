@@ -1,0 +1,76 @@
+
+---
+description: React component rules — structure, props, naming, size limits
+globs: ["src/**/*.tsx"]
+alwaysApply: true
+---
+
+# Component Rules
+
+## File & Naming
+
+- Bir faylda bir komponent
+- Fayl adı: PascalCase → CourseCard.tsx
+- Komponent adı fayl adı ilə eyni olmalıdır
+
+## Structure
+
+// 1. Props interface — komponentin üstündə
+interface CourseCardProps {
+  course: Course
+  onEnroll: (id: string) => void
+  className?: string
+}
+
+// 2. Named export — default export deyil
+export function CourseCard({ course, onEnroll, className }: CourseCardProps) {
+  // 3. Hooks ən üstdə
+  const { t } = useTranslation('bootcamp')
+  const { mutate: enroll } = useEnroll()
+
+  // 4. Handlers
+  function handleEnroll() {
+    enroll(course.id)
+    onEnroll(course.id)
+  }
+
+  // 5. Return
+  return (
+    <div className={cn('rounded-lg border p-4', className)}>
+      ...
+    </div>
+  )
+}
+
+## Rules
+
+- Props interface həmişə komponentin üstündə yazılır
+- Props həmişə destructure edilir — props.x yazılmır
+- React.FC yalnız children lazım olduqda istifadə et
+- Komponent 150 sətirdən böyük olmamalıdır — böyüdükcə kiçik komponentlərə böl
+- Business logic komponent içinə yazılmır — custom hook-a çıxarılır
+- className prop-u həmişə cn() ilə birləşdirilir
+
+## cn() usage
+
+import { cn } from '@/shared/utils/cn'
+
+// ✅ Correct
+<div className={cn(
+  'flex items-center gap-4 rounded-lg',
+  isActive && 'bg-primary text-primary-foreground',
+  size === 'sm' && 'p-2 text-sm',
+  className
+)} />
+
+// ❌ Wrong
+<div style={{ display: 'flex' }} />
+<div className={`flex ${isActive ? 'bg-primary' : ''}`} />
+
+## index.ts exports
+
+Her components/ qovluğu index.ts ilə bitməlidir:
+
+export { CourseCard } from './CourseCard'
+export { CourseGrid } from './CourseGrid'
+export { CourseFilters } from './CourseFilters'

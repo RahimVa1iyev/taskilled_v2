@@ -1,0 +1,116 @@
+
+---
+description: Error handling, React Hook Form + Zod patterns, toast notifications
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: true
+---
+
+# Error Handling & Forms
+
+## Toast Notifications
+
+// ✅ Always import from shared wrapper — never directly from sonner
+import { toast } from '@/shared/lib/toast'
+
+toast.success('Uğurla saxlanıldı')
+toast.error('Xəta baş verdi')
+toast.apiError(error)   // API xətasını avtomatik parse edib göstərir
+toast.promise(apiCall(), {
+  loading: 'Göndərilir...',
+  success: 'Uğurlu!',
+  error: (err) => parseApiError(err),
+})
+
+// ❌ Never import directly
+import { toast } from 'sonner'   // WRONG — həmişə @/shared/lib/toast istifadə et
+
+## API Error Handling
+
+// Mutation xətaları queryClient.ts-dəki qlobal onError handle edir
+// Hook-da ayrıca onError lazım deyil — yalnız xüsusi case-lərdə yaz
+
+// ✅ try/catch içində
+import { parseApiError } from '@/shared/utils/error.utils'
+
+try {
+  await someApiCall()
+} catch (error) {
+  toast.error(parseApiError(error))
+}
+
+// ❌ Never
+catch (error: any) { console.log(error.message) }
+
+## React Hook Form + Zod Pattern
+
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/shared/ui'
+import { loginSchema, type LoginFormData } from '../types/auth.schema'
+
+export function LoginForm() {
+  const { mutate: login, isPending } = useLogin()
+
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '' },
+  })
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit((data) => login(data))} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>E-mail</FormLabel>
+              <FormControl>
+                <Input type="email" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" disabled={isPending} className="w-full">
+          {isPending ? 'Daxil olunur...' : 'Daxil ol'}
+        </Button>
+      </form>
+    </Form>
+  )
+}
+
+## Form Components
+
+// ✅ Shared form komponentlərini istifadə et
+import { FormInput, FormSelect, FormTextarea } from '@/shared/ui'
+
+<FormInput
+  name="email"
+  control={form.control}
+  label="E-mail"
+  type="email"
+  required
+/>
+
+// ❌ Birbaşa shadcn Input + FormField sarğısı yazma
+// shared/ui/custom/Form/ altındakı komponentlər bu işi görür
+
+## Loading & Empty States
+
+// ✅ Always handle all query states
+function CourseList() {
+  const { data, isLoading, isError, error } = useCourses(filters)
+
+  if (isLoading) return <Spinner />
+  if (isError) return <ErrorState message={parseApiError(error)} />
+  if (!data?.data.length) return (
+    <EmptyState
+      title="Kurs tapılmadı"
+      description="Axtarış parametrlərini dəyişdirin"
+      action={{ label: 'Filtri təmizlə', onClick: clearFilters }}
+    />
+  )
+
+  return <CourseGrid courses={data.data} />
+}

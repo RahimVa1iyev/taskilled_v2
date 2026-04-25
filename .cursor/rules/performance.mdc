@@ -1,0 +1,132 @@
+
+---
+description: Performance rules — lazy loading, memoization, bundle optimization
+globs: ["src/**/*.ts", "src/**/*.tsx"]
+alwaysApply: true
+---
+
+# Performance Rules
+
+## Lazy Loading — Route səviyyəsində
+
+// ✅ Bütün page komponentləri lazy import olunur
+const BootcampPage = lazy(() => import('@/modules/bootcamp/pages/BootcampPage'))
+const LoginPage    = lazy(() => import('@/modules/auth/pages/LoginPage'))
+
+// ❌ Birbaşa import — bütün bundle-a əlavə olunur
+import { BootcampPage } from '@/modules/bootcamp/pages/BootcampPage'
+
+// Suspense mütləq lazımdır
+<Suspense fallback={<Spinner />}>
+  <Outlet />
+</Suspense>
+
+## Lazy Loading — Komponent səviyyəsində
+
+// ✅ Ağır komponentlər lazy import olunur
+const RichTextEditor = lazy(() => import('@/shared/ui/custom/RichTextEditor'))
+const PDFViewer      = lazy(() => import('@/shared/ui/custom/PDFViewer'))
+const VideoPlayer    = lazy(() => import('@/shared/ui/custom/VideoPlayer'))
+
+// Qayda: npm package-i 50KB+ olan komponentlər lazy olmalıdır
+
+## React.memo — nə vaxt istifadə olunur
+
+// ✅ Lazımdır: parent tez-tez re-render olur, komponent ağırdır
+const CourseCard = React.memo(function CourseCard({ course, onEnroll }: CourseCardProps) {
+  return (...)
+})
+
+// ✅ Lazımdır: siyahı elementləri (50+ item render olur)
+const NotificationItem = React.memo(function NotificationItem({ item }: Props) {
+  return (...)
+})
+
+// ❌ Lazım deyil: sadə, az render olunan komponentlər
+// React.memo overhead yaradır — hər yerə qoyma
+
+## useMemo — nə vaxt istifadə olunur
+
+// ✅ Lazımdır: ağır hesablama
+const sortedCourses = useMemo(() =>
+  courses.sort((a, b) => b.rating - a.rating),
+  [courses]
+)
+
+// ✅ Lazımdır: filter + transform birlikdə
+const filteredData = useMemo(() =>
+  data.filter(item => item.status === filter).map(transform),
+  [data, filter]
+)
+
+// ❌ Lazım deyil: sadə dəyər
+const title = useMemo(() => `${user.name} profili`, [user.name])
+// Sadəcə: const title = `${user.name} profili`
+
+## useCallback — nə vaxt istifadə olunur
+
+// ✅ Lazımdır: React.memo komponentə prop kimi verilir
+const handleEnroll = useCallback((courseId: string) => {
+  enroll(courseId)
+}, [enroll])
+
+<CourseCard onEnroll={handleEnroll} />  // CourseCard memo-dursa
+
+// ❌ Lazım deyil: adi komponentə verilir
+const handleClick = useCallback(() => setOpen(true), [])
+// Sadəcə: function handleClick() { setOpen(true) }
+
+## Image Optimization
+
+// ✅ WebP formatı istifadə et
+<img src="/images/hero.webp" alt="Hero" />
+
+// ✅ Lazy loading — viewport xaricindəkilər üçün
+<img src={course.thumbnail} alt={course.title} loading="lazy" />
+
+// ✅ Ölçü həmişə verilməlidir — layout shift qarşısını alır
+<img src={avatar} alt={name} width={48} height={48} loading="lazy" />
+
+// ❌ Hər şeyə eager loading
+<img src={image} />
+
+## TanStack Query Optimization
+
+// ✅ staleTime — dəyişməyən data üçün yüksək tut
+export function useCountries() {
+  return useQuery({
+    queryKey: commonKeys.countries(),
+    queryFn:  commonApi.getCountries,
+    staleTime: Infinity,   // ölkələr dəyişmir
+  })
+}
+
+// ✅ select — yalnız lazımi data-nı götür, re-render azalır
+export function useCourseTitle(id: string) {
+  return useQuery({
+    queryKey: bootcampKeys.detail(id),
+    queryFn:  () => bootcampApi.getCourseById(id),
+    select:   (data) => data.title,   // yalnız title dəyişəndə re-render
+  })
+}
+
+// ✅ enabled — şərtli fetch
+export function useProfile() {
+  const isAuthenticated = useIsAuthenticated()
+  return useQuery({
+    queryKey: profileKeys.me(),
+    queryFn:  profileApi.getProfile,
+    enabled:  isAuthenticated,   // login olmadan fetch etmə
+  })
+}
+
+## Bundle Optimization
+
+// ✅ Named import — tree shaking işləyir
+import { format } from 'date-fns'
+
+// ❌ Bütün library import — bundle şişir
+import * as dateFns from 'date-fns'
+
+// ✅ Dynamic import — böyük utility library-lər üçün
+const { jsPDF } = await import('jspdf')

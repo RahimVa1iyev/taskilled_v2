@@ -1,0 +1,116 @@
+
+---
+description: Accessibility rules — ARIA, keyboard navigation, focus management, semantics
+globs: ["src/**/*.tsx"]
+alwaysApply: true
+---
+
+# Accessibility Rules
+
+## Semantik HTML
+
+// ✅ Düzgün element seç
+<button onClick={handleClick}>Göndər</button>        // klik üçün
+<a href={ROUTES.BOOTCAMP.ROOT}>Bootcamp</a>          // naviqasiya üçün
+<nav>, <main>, <header>, <footer>, <section>         // landmark-lar
+
+// ❌ div ilə hər şey
+<div onClick={handleClick}>Göndər</div>              // keyboard ilə işləmir
+
+## Button və Link
+
+// ✅ Icon-only button — aria-label mütləq
+<button aria-label="Bildirişləri bağla" onClick={close}>
+  <X className="h-4 w-4" />
+</button>
+
+// ✅ Loading vəziyyəti
+<button disabled={isPending} aria-busy={isPending}>
+  {isPending ? 'Göndərilir...' : 'Göndər'}
+</button>
+
+// ✅ External link
+<a href={url} target="_blank" rel="noopener noreferrer">
+  Ətraflı <span className="sr-only">(yeni tab-da açılır)</span>
+</a>
+
+## Form Accessibility
+
+// ✅ Label həmişə input ilə əlaqəli olmalıdır
+// shadcn FormLabel + FormControl avtomatik edir — istifadə et
+<FormItem>
+  <FormLabel>E-mail</FormLabel>       // htmlFor avtomatik
+  <FormControl>
+    <Input type="email" />            // id avtomatik
+  </FormControl>
+  <FormMessage />
+</FormItem>
+
+// ✅ Required sahələr
+<FormLabel>
+  Ad <span className="text-required" aria-hidden="true">*</span>
+  <span className="sr-only">(mütləq)</span>
+</FormLabel>
+
+// ✅ Xəta mesajı input ilə əlaqəli
+// shadcn FormMessage aria-live="polite" ilə gəlir — avtomatik
+
+## Image Alt Text
+
+// ✅ Məzmunlu şəkillər — təsviredici alt
+<img src={course.thumbnail} alt={`${course.title} kurs şəkli`} />
+
+// ✅ Dekorativ şəkillər — boş alt
+<img src={decorativeBg} alt="" role="presentation" />
+
+// ✅ Avatar
+<img src={user.avatar} alt={`${user.name} profil şəkli`} />
+
+// ❌ Alt yoxdur
+<img src={thumbnail} />   // WRONG
+
+## Keyboard Navigation
+
+// ✅ Modal açılanda focus içəriyə keçir
+// shadcn Dialog bunu avtomatik edir
+
+// ✅ Modal bağlananda focus əvvəlki elementə qayıdır
+// shadcn Dialog bunu avtomatik edir
+
+// ✅ Escape ilə modal bağlanır
+// shadcn Dialog bunu avtomatik edir
+
+// ✅ Tab sırası məntiqi olmalıdır
+// tabIndex yalnız lazım olduqda istifadə et
+// tabIndex={-1} — yalnız proqramatik focus üçün
+
+## Focus Görünüşü
+
+// ✅ Focus həmişə görünür olmalıdır — heç vaxt silmə
+// ❌ outline: none CSS-də — WRONG
+// ✅ Shadcn focus-visible:ring istifadə edir — toxunma
+
+## Screen Reader
+
+// ✅ Yalnız screen reader üçün mətn
+<span className="sr-only">Yüklənir</span>
+
+// ✅ aria-live — dinamik məzmun dəyişəndə
+<div aria-live="polite" aria-atomic="true">
+  {isLoading ? 'Yüklənir...' : `${count} nəticə tapıldı`}
+</div>
+
+// ✅ aria-expanded — accordion, dropdown
+<button aria-expanded={isOpen} aria-controls="menu-content">
+  Menyu
+</button>
+
+## Rəng Kontrast
+
+// ✅ Shadcn semantic token-ları WCAG AA standartını təmin edir
+// text-foreground on bg-background         — ✅ 4.5:1+
+// text-primary-foreground on bg-primary    — ✅ 4.5:1+
+// text-muted-foreground on bg-background   — ✅ 4.5:1+
+
+// ❌ Özbaşına rəng seçəndə kontrast yoxla
+// Tövsiyə: https://webaim.org/resources/contrastchecker/
