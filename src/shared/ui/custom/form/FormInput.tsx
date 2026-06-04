@@ -2,9 +2,11 @@ import { useId } from 'react'
 import { useController, type Control, type FieldPath, type FieldValues } from 'react-hook-form'
 
 import { cn } from '@/shared/utils/cn'
+import { FieldLabel } from './FieldLabel'
 
 interface FormInputProps<TFieldValues extends FieldValues> {
-  control: Control<TFieldValues>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  control: Control<TFieldValues, any, any>
   name: FieldPath<TFieldValues>
   label: string
   type?: string
@@ -28,16 +30,8 @@ export function FormInput<TFieldValues extends FieldValues>({
   const { field, fieldState } = useController({ control, name })
 
   return (
-    <div className={cn('mb-4', className)}>
-      <label htmlFor={id} className="mb-[6px] block text-[11px] font-medium text-auth-text">
-        {label}{' '}
-        {required ? (
-          <>
-            <span className="text-required" aria-hidden="true">*</span>
-            <span className="sr-only">(mütləq)</span>
-          </>
-        ) : null}
-      </label>
+    <div className={cn(className)}>
+      <FieldLabel htmlFor={id} label={label} required={required} />
 
       <input
         id={id}
@@ -46,10 +40,9 @@ export function FormInput<TFieldValues extends FieldValues>({
         autoComplete={autoComplete}
         aria-invalid={fieldState.invalid || undefined}
         className={cn(
-          'h-[50px] w-full rounded-xl border bg-white px-4 text-[12px] text-auth-ink outline-none transition-colors placeholder:text-auth-placeholder focus:ring-1',
-          fieldState.error
-            ? 'border-destructive focus:border-destructive focus:ring-destructive'
-            : 'border-auth-border focus:border-auth-accent focus:ring-auth-accent'
+          'h-[48px] w-full rounded-[14px] bg-[--color-field-bg] px-4 text-[14px] text-foreground outline-none transition-colors placeholder:text-[--color-text-placeholder]',
+          'border border-[--color-border-soft] focus:border-primary focus:ring-1 focus:ring-primary focus:bg-[--color-card-bg]',
+          fieldState.error && 'border-destructive'
         )}
         {...field}
       />

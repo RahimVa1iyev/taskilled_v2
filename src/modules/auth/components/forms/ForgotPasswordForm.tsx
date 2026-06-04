@@ -15,6 +15,7 @@ export function ForgotPasswordForm(): React.JSX.Element {
         placeholder="you@example.com"
         autoComplete="email"
         required
+        className="mb-4"
       />
       <PrimaryButton type="submit" loading={loading}>
         Send reset code

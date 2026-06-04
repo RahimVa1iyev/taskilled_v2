@@ -1,31 +1,33 @@
-import { Divider, FormCheckbox, FormInput, FormPasswordInput, GoogleButton, PasswordStrength, PrimaryButton } from '@/shared/ui'
+import { Divider, FormInput, FormPasswordInput, GoogleButton, PasswordStrength, PrimaryButton } from '@/shared/ui'
 import { useRegisterForm } from '@/modules/auth/hooks/useRegisterForm'
 
 export function RegisterForm(): React.JSX.Element {
-  const { form, password, isGoogleLoading, onGoogle, onSubmit } = useRegisterForm()
+  const { form, password, onGoogle, onSubmit } = useRegisterForm()
   const loading = form.formState.isSubmitting
 
   return (
     <>
-      <GoogleButton onClick={onGoogle} loading={isGoogleLoading} />
+      <GoogleButton onClick={onGoogle} loading={false} />
       <Divider />
 
       <form onSubmit={form.handleSubmit(onSubmit)} noValidate>
         <FormInput
           control={form.control}
-          name="name"
+          name="firstName"
           label="Name"
           placeholder="Jane"
           autoComplete="given-name"
           required
+          className="mb-4"
         />
         <FormInput
           control={form.control}
-          name="surname"
+          name="lastName"
           label="Surname"
           placeholder="Doe"
           autoComplete="family-name"
           required
+          className="mb-4"
         />
         <FormInput
           control={form.control}
@@ -35,6 +37,7 @@ export function RegisterForm(): React.JSX.Element {
           placeholder="you@example.com"
           autoComplete="email"
           required
+          className="mb-4"
         />
         <FormPasswordInput
           control={form.control}
@@ -43,14 +46,9 @@ export function RegisterForm(): React.JSX.Element {
           placeholder="At least 8 characters"
           autoComplete="new-password"
           required
+          className="mb-4"
         />
         <PasswordStrength password={password} />
-
-        <FormCheckbox
-          control={form.control}
-          name="agree"
-          label="I agree to Terms of Service and Privacy Policy"
-        />
 
         <div className="mt-3">
           <PrimaryButton type="submit" loading={loading}>
@@ -61,4 +59,3 @@ export function RegisterForm(): React.JSX.Element {
     </>
   )
 }
-

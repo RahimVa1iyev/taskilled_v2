@@ -3,6 +3,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { useController, type Control, type FieldPath, type FieldValues } from 'react-hook-form'
 
 import { cn } from '@/shared/utils/cn'
+import { FieldLabel } from './FieldLabel'
 
 interface FormPasswordInputProps<TFieldValues extends FieldValues> {
   control: Control<TFieldValues>
@@ -28,16 +29,8 @@ export function FormPasswordInput<TFieldValues extends FieldValues>({
   const { field, fieldState } = useController({ control, name })
 
   return (
-    <div className={cn('mb-4', className)}>
-      <label htmlFor={id} className="mb-[6px] block text-[11px] font-medium text-auth-text">
-        {label}{' '}
-        {required ? (
-          <>
-            <span className="text-required" aria-hidden="true">*</span>
-            <span className="sr-only">(mütləq)</span>
-          </>
-        ) : null}
-      </label>
+    <div className={cn(className)}>
+      <FieldLabel htmlFor={id} label={label} required={required} />
 
       <div className="relative">
         <input
@@ -47,10 +40,10 @@ export function FormPasswordInput<TFieldValues extends FieldValues>({
           autoComplete={autoComplete}
           aria-invalid={fieldState.invalid || undefined}
           className={cn(
-            'h-[50px] w-full rounded-xl border bg-white px-4 pr-12 text-[12px] text-auth-ink outline-none transition-colors placeholder:text-auth-placeholder focus:ring-1',
+            'h-[50px] w-full rounded-xl border bg-card px-4 pr-12 text-[12px] text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:ring-1',
             fieldState.error
               ? 'border-destructive focus:border-destructive focus:ring-destructive'
-              : 'border-auth-border focus:border-auth-accent focus:ring-auth-accent'
+              : 'border-border focus:border-primary focus:ring-primary'
           )}
           {...field}
         />
@@ -58,7 +51,7 @@ export function FormPasswordInput<TFieldValues extends FieldValues>({
           type="button"
           aria-label={show ? 'Şifrəni gizlət' : 'Şifrəni göstər'}
           onClick={() => setShow((v) => !v)}
-          className="absolute right-4 top-1/2 -translate-y-1/2 text-auth-placeholder hover:text-auth-ink"
+          className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
         >
           {show ? <EyeOff size={18} /> : <Eye size={18} />}
         </button>

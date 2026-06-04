@@ -10,9 +10,10 @@ import { LogoPill } from '@/modules/auth/components/LogoPill'
 interface AuthLayoutProps {
   children: ReactNode
   className?: string
+  hideBackLink?: boolean
 }
 
-export function AuthLayout({ children, className }: AuthLayoutProps): React.JSX.Element {
+export function AuthLayout({ children, className, hideBackLink }: AuthLayoutProps): React.JSX.Element {
   return (
     <div className="flex min-h-dvh flex-col lg:flex-row">
       <AuthLeftPanel />
@@ -24,13 +25,15 @@ export function AuthLayout({ children, className }: AuthLayoutProps): React.JSX.
 
         <div className="flex flex-1 flex-col justify-center lg:flex-none lg:w-full">
           <div className={cn('relative mx-auto flex w-full max-w-[340px] flex-col', className)}>
-            <Link
-              to={ROUTES.ROOT}
-              className="mb-6 inline-flex items-center gap-1.5 self-start text-[11px] text-auth-text transition-colors duration-150 hover:text-auth-ink lg:mb-8 lg:self-end"
-            >
-              <ArrowLeft className="h-3 w-3" />
-              Back to home
-            </Link>
+            {!hideBackLink && (
+              <Link
+                to={ROUTES.ROOT}
+                className="mb-6 inline-flex items-center gap-1.5 self-start text-[11px] text-auth-text transition-colors duration-150 hover:text-auth-ink lg:mb-8 lg:self-end"
+              >
+                <ArrowLeft className="h-3 w-3" />
+                Back to home
+              </Link>
+            )}
 
             {children}
           </div>

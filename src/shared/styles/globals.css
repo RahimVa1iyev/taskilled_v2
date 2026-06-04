@@ -7,19 +7,23 @@ body {
 }
 
 @keyframes shake {
+
   0%,
   100% {
     transform: translateX(0);
   }
+
   20%,
   60% {
     transform: translateX(-6px);
   }
+
   40%,
   80% {
     transform: translateX(6px);
   }
 }
+
 .animate-shake {
   animation: shake 0.4s ease-in-out;
 }
@@ -29,11 +33,13 @@ body {
     opacity: 0;
     transform: translateX(24px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
   }
 }
+
 .animate-slide-in {
   animation: slide-in-right 0.2s ease-out;
 }
@@ -42,10 +48,12 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
 }
+
 .animate-fade-in {
   animation: fade-in 0.3s ease-out;
 }
@@ -94,21 +102,67 @@ body {
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Auth-specific palette (from initial design) */
-  --color-auth-panel: #0F172A;
-  --color-auth-panel-surface: #1E293B;
-  --color-auth-panel-border: #334155;
-  --color-auth-panel-text: #94A3B8;
-  --color-auth-panel-muted: #64748B;
-  --color-auth-accent: #D1E728;
-  --color-auth-accent-hover: #BDD120;
-  --color-auth-ink: #1C1917;
-  --color-auth-page: #FAFAF5;
-  --color-auth-page-muted: #F5F5F0;
-  --color-auth-border: #E7E5E4;
-  --color-auth-warn-link: #92800A;
-  --color-auth-text: #78716C;
-  --color-auth-placeholder: #A8A29E;
+  /* Brand color system */
+  --color-dark: #0F172A;
+  --color-dark-surface: #1E293B;
+  --color-dark-border: #334155;
+  --color-dark-muted: #94A3B8;
+  --color-dark-subtle: #64748B;
+  --color-brand: #D1E728;
+  --color-brand-hover: #BDD120;
+  --color-ink: #1C1917;
+  --color-surface: #F5F5EF;
+  --color-surface-muted: #EFEDE6;
+  --color-border-soft: #E7E5E4;
+  --color-warn: #92800A;
+  --color-text-muted: #78716C;
+  --color-text-placeholder: #A8A29E;
+
+  /* App layout tokens */
+  --color-page-bg: #F5F5EF;
+  --color-sidebar-bg: #F5F5EF;
+  --color-sidebar-border: transparent;
+  --color-sidebar-text: #1C1917;
+  --color-sidebar-text-muted: #78716C;
+  --color-content-bg: #FFFFFF;
+  --color-card-bg: #FFFFFF;
+  --color-card-border: #E2E0DC;
+  --color-nav-active-bg: #DDE8C0;
+  --color-nav-active-fg: #3A5200;
+  --color-brand-on: #1C1917;
+  --color-brand-text: #4D6A00;
+  --color-ghost-bg: #EEEEE6;
+  --color-ghost-fg: #44403C;
+  --color-ghost-border: #D6D3CE;
+  --color-field-bg: #F5F5EF;
+  --color-progress-track: #D8E2D4;
+  --color-pub-box-bg: #F5F7E3;
+  --color-pub-box-border: #DCE5A0;
+  --color-pub-box-fg: #4D6A00;
+  --color-chip-bg: #DDE8C0;
+  --color-chip-fg: #3A5200;
+  --color-anchor-active-bg: #1C1917;
+  --color-anchor-active-fg: #D1E728;
+
+  /* Custom container widths */
+  --container-8xl: 92rem; /* 1408px */
+
+  /* Backward compatibility aliases — will be removed gradually */
+  --color-auth-panel: var(--color-dark);
+  --color-auth-panel-surface: var(--color-dark-surface);
+  --color-auth-panel-border: var(--color-dark-border);
+  --color-auth-panel-text: var(--color-dark-muted);
+  --color-auth-panel-muted: var(--color-dark-subtle);
+  --color-auth-accent: var(--color-brand);
+  --color-auth-accent-hover: var(--color-brand-hover);
+  --color-auth-ink: var(--color-ink);
+  --color-auth-page: var(--color-surface);
+  --color-auth-page-muted: var(--color-surface-muted);
+  --color-auth-border: var(--color-border-soft);
+  --color-auth-warn-link: var(--color-warn);
+  --color-auth-text: var(--color-text-muted);
+  --color-auth-placeholder: var(--color-text-placeholder);
+
 }
 
 :root {
@@ -193,3 +247,111 @@ body {
   }
 }
 
+/* Custom App Layout Themes */
+[data-theme="dark"] {
+  /* Brand mappings */
+  --color-ink: #F8FAFC;
+  --color-surface: #1E293B;
+  --color-surface-muted: #0F172A;
+  --color-border-soft: #334155;
+  --color-text-muted: #94A3B8;
+  --color-text-placeholder: #64748B;
+
+  /* App Layout mappings */
+  --color-page-bg: #0F172A;
+  --color-sidebar-bg: #0F172A;
+  --color-sidebar-border: transparent;
+  --color-sidebar-text: #F8FAFC;
+  --color-sidebar-text-muted: #94A3B8;
+  --color-content-bg: #0F172A;
+  --color-card-bg: #1E293B;
+  --color-card-border: #334155;
+  --color-nav-active-bg: #334155;
+  --color-nav-active-fg: #D1E728;
+  --color-brand-on: #0F172A;
+  --color-brand-text: #D1E728;
+  --color-ghost-bg: #334155;
+  --color-ghost-fg: #E2E8F0;
+  --color-ghost-border: #475569;
+  --color-field-bg: #1E293B;
+  --color-progress-track: #334155;
+  --color-pub-box-bg: #1E293B;
+  --color-pub-box-border: #334155;
+  --color-pub-box-fg: #F8FAFC;
+  --color-chip-bg: #334155;
+  --color-chip-fg: #F8FAFC;
+  --color-anchor-active-bg: #D1E728;
+  --color-anchor-active-fg: #0F172A;
+}
+
+[data-theme="ocean"] {
+  /* Brand mappings */
+  --color-ink: #0C4A6E;
+  --color-surface: #F0F9FF;
+  --color-surface-muted: #E0F2FE;
+  --color-border-soft: #BAE6FD;
+  --color-text-muted: #0284C7;
+  --color-text-placeholder: #38BDF8;
+
+  /* App Layout mappings */
+  --color-page-bg: #F0F8FF;
+  --color-sidebar-bg: #F0F8FF;
+  --color-sidebar-border: transparent;
+  --color-sidebar-text: #0C4A6E;
+  --color-sidebar-text-muted: #0284C7;
+  --color-content-bg: #FFFFFF;
+  --color-card-bg: #FFFFFF;
+  --color-card-border: #BAE6FD;
+  --color-nav-active-bg: #BAE6FD;
+  --color-nav-active-fg: #0369A1;
+  --color-brand-on: #FFFFFF;
+  --color-brand-text: #0369A1;
+  --color-ghost-bg: #E0F2FE;
+  --color-ghost-fg: #0C4A6E;
+  --color-ghost-border: #BAE6FD;
+  --color-field-bg: #F0F8FF;
+  --color-progress-track: #E0F2FE;
+  --color-pub-box-bg: #F0F9FF;
+  --color-pub-box-border: #BAE6FD;
+  --color-pub-box-fg: #0369A1;
+  --color-chip-bg: #BAE6FD;
+  --color-chip-fg: #0369A1;
+  --color-anchor-active-bg: #0C4A6E;
+  --color-anchor-active-fg: #38BDF8;
+}
+
+[data-theme="nature"] {
+  /* Brand mappings */
+  --color-ink: #1F291E;
+  --color-surface: #F4F5F0;
+  --color-surface-muted: #EAECE2;
+  --color-border-soft: #D3D8C6;
+  --color-text-muted: #536A50;
+  --color-text-placeholder: #86A789;
+
+  /* App Layout mappings */
+  --color-page-bg: #F4F5F0;
+  --color-sidebar-bg: #F4F5F0;
+  --color-sidebar-border: transparent;
+  --color-sidebar-text: #1F291E;
+  --color-sidebar-text-muted: #536A50;
+  --color-content-bg: #FFFFFF;
+  --color-card-bg: #FFFFFF;
+  --color-card-border: #D3D8C6;
+  --color-nav-active-bg: #D3D8C6;
+  --color-nav-active-fg: #2C3E2A;
+  --color-brand-on: #FFFFFF;
+  --color-brand-text: #3D5A3A;
+  --color-ghost-bg: #EAECE2;
+  --color-ghost-fg: #1F291E;
+  --color-ghost-border: #D3D8C6;
+  --color-field-bg: #F4F5F0;
+  --color-progress-track: #D3D8C6;
+  --color-pub-box-bg: #F1F3EB;
+  --color-pub-box-border: #D3D8C6;
+  --color-pub-box-fg: #2C3E2A;
+  --color-chip-bg: #D3D8C6;
+  --color-chip-fg: #2C3E2A;
+  --color-anchor-active-bg: #1F291E;
+  --color-anchor-active-fg: #A3B899;
+}
