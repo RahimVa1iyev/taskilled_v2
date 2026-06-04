@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import {
   CheckCircle,
   Clock,
@@ -23,7 +23,7 @@ import {
 } from '@/modules/business-simulation/api/submission.api'
 import { Spinner } from '@/shared/ui/custom/Spinner'
 import { Sheet } from '@/shared/ui/custom/Sheet'
-import type { AssignmentResponse, AssignmentAllowedType } from '@/modules/business-simulation/types/program.types'
+import type { AssignmentResponse } from '@/modules/business-simulation/types/program.types'
 
 type TaskStatus = 'Done' | 'In Progress' | 'To Do' | 'Review' | 'Locked'
 

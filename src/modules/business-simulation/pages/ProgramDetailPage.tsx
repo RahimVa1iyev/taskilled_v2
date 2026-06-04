@@ -24,7 +24,6 @@ import { useMentorsByProgram } from '@/modules/business-simulation/api/queries/u
 import { useCohortsByProgram } from '@/modules/business-simulation/api/queries/useCohortsByProgram'
 import { useMyEnrollments } from '@/modules/business-simulation/api/queries/useMyEnrollments'
 import { usePrograms } from '@/modules/business-simulation/api/queries/usePrograms'
-import { useCreateEnrollment } from '@/modules/business-simulation/api/enrollment.api'
 import { toast } from '@/shared/lib/toast'
 
 import { ROUTES } from '@/shared/constants/routes'
@@ -60,8 +59,7 @@ export function ProgramDetailPage() {
     page_size: 4,
   })
 
-  const createEnrollment = useCreateEnrollment()
-
+  // remove unused createEnrollment
   if (isLoadingProgram || isLoadingPhases || isLoadingAssignments) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">

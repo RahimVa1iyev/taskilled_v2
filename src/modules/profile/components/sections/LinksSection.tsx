@@ -1,6 +1,5 @@
 import {
   Link as LinkIcon, Plus, X,
-  ExternalLink,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 

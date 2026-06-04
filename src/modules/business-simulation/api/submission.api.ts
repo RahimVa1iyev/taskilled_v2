@@ -24,7 +24,7 @@ const submissionService = {
       enrollment_id: data.enrollmentId
     }
     console.log("🚀 Yaratmaq istədiyimiz Submission Payload-u:", payload)
-    
+
     const res = await api.post<SubmissionResponse>('/business_simulation_ms/api/v1/submission/', payload)
     return res.data
   },
